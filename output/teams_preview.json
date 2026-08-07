@@ -1,0 +1,27 @@
+{
+  "@type": "MessageCard",
+  "@context": "http://schema.org/extensions",
+  "summary": "Fraud Alert Summary",
+  "themeColor": "D9534F",
+  "title": "Fraud Alert \u2014 2026-08-07",
+  "sections": [
+    {
+      "activityTitle": "14 claim(s) flagged for review",
+      "facts": [
+        {
+          "name": "Claims flagged",
+          "value": "14"
+        },
+        {
+          "name": "Period",
+          "value": "2026-08-07"
+        },
+        {
+          "name": "Highest score",
+          "value": "4"
+        }
+      ],
+      "text": "Top flagged claims: CLM30031 ($137,536); CLM30020 ($157,774); CLM30122 ($96,514); CLM30037 ($151,169); CLM30015 ($49,137)"
+    }
+  ]
+}
