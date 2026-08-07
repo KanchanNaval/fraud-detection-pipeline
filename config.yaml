@@ -1,0 +1,67 @@
+# ============================================================
+# Fraud Detection Pipeline — Configuration
+# Business team can tune these without touching any code.
+# ============================================================
+
+data:
+  input_folder: "data"              # where daily Excel file(s) are dropped
+  file_pattern: "daily_claims_*.xlsx"   # each day's file, e.g. daily_claims_2026-08-08.xlsx
+  required_columns:
+    - ClaimID
+    - PolicyID
+    - ClaimantName
+    - ClaimType
+    - Region
+    - PolicyStartDate
+    - ClaimDate
+    - ClaimAmount
+    - CoverageLimit
+
+rules:
+  early_claim_days: 30              # claim filed within N days of policy start = suspicious
+  high_amount_ratio: 0.85           # claim amount >= this % of coverage limit = suspicious
+  duplicate_window_days: 7          # same policy + same amount within N days = duplicate flag
+  frequency_window_days: 365        # trailing window for frequency check
+  frequency_threshold: 3            # >= this many claims in window = suspicious
+
+ml:
+  enabled: true
+  contamination: 0.06               # expected % of anomalies (tune based on history)
+  min_rows_required: 30             # skip ML if too little data to train on
+
+scoring:
+  # each triggered rule adds points; ML anomaly flag adds points too
+  points_per_rule: 1
+  points_ml_anomaly: 2
+  flag_threshold: 2                 # total score >= this => claim is flagged
+
+state:
+  # tracks which claims have already been notified on, so re-running daily
+  # doesn't re-alert on the same claim every single day
+  notified_claims_file: "output/notified_claims_state.json"
+
+notifications:
+  send_email: true
+  send_teams: true
+  send_slack: false
+
+  email:
+    smtp_server: "smtp.office365.com"
+    smtp_port: 587
+    sender_email: "fraud-alerts@yourcompany.com"
+    # password should come from an environment variable, never hardcoded here
+    sender_password_env_var: "FRAUD_ALERT_EMAIL_PASSWORD"
+    recipients:
+      - "claims-review-team@yourcompany.com"
+      - "fraud-investigations@yourcompany.com"
+    subject_prefix: "[Fraud Alert]"
+
+  teams:
+    webhook_url_env_var: "FRAUD_ALERT_TEAMS_WEBHOOK"
+
+  slack:
+    webhook_url_env_var: "FRAUD_ALERT_SLACK_WEBHOOK"
+
+  # if true, notifications are written to /output instead of actually sent —
+  # useful for testing before wiring up real SMTP/webhook credentials
+  dry_run: true
